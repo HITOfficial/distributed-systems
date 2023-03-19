@@ -16,20 +16,7 @@ class Poll(BaseModel):
     votes: List[Vote] = []
 
 
-polls = {
-    # "poll1": {
-    #     "votes": [
-    #         {
-    #             "option": 1,
-    #             "username": "user1"
-    #         },
-    #         {
-    #             "option": 2,
-    #             "username": "user2"
-    #         }
-    #     ]
-    # }
-}
+polls = {}
 
 
 @app.get("/")
