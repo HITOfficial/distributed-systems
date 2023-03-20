@@ -1,6 +1,10 @@
 require('dotenv').config()
 const express = require('express');
 const  router =   require("./src/routes/currencyRouter")
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 
 const app = express();
 
