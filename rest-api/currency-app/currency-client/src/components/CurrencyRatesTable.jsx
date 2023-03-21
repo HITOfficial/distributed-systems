@@ -6,7 +6,7 @@ const CurrencyRatesTable   = ({ rates }) => {
             sx={{
             marginTop:"1rem",
             width: "100%",
-                height:"36rem",
+                height:"34rem",
             overflow:"auto",
             }}
         >

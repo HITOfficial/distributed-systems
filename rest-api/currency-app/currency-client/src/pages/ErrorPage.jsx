@@ -16,7 +16,7 @@ const ErrorPage = () => {
     return (
 <ErrorPageWrapper>
     <Typography >404 Page not found</Typography>
-    <Button variant="contained" onClick={() => navigation("/")}>Go back to Home</Button>
+    <Button variant="contained" onClick={() => navigation("/home")}>Go back to Home</Button>
 </ErrorPageWrapper>
     )
 }

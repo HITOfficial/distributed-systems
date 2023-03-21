@@ -1,6 +1,6 @@
 import {Container, Paper} from "@mui/material";
-import {Outlet} from "react-router-dom";
-import {createContext, useState} from "react";
+import {Outlet, useNavigate} from "react-router-dom";
+import {createContext, useEffect, useState} from "react";
 import dayjs from "dayjs";
 
 
@@ -15,7 +15,11 @@ function App() {
         selectedDate: dayjs("2023-01-01"),
         currencyRates: []
     })
+    const navigation = useNavigate()
 
+    useEffect(() => {
+        localStorage.getItem('accessToken') === null ? navigation('/login') : navigation('/home')
+    },[])
 
   return (
       <CurrenciesListContext.Provider value={{

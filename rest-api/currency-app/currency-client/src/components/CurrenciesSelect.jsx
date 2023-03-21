@@ -1,11 +1,11 @@
 import {FormControl, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 
-const Currencies = ({currenciesList, onChange}) => {
+const CurrenciesSelect = ({currenciesList, onChange}) => {
     return (
         <FormControl>
-            <InputLabel>Currencies</InputLabel>
+            <InputLabel>CurrenciesSelect</InputLabel>
             <Select
-            label="Currencies"
+            label="CurrenciesSelect"
             onChange={onChange}
             defaultValue="eur"
             style={{
@@ -39,4 +39,4 @@ const Currencies = ({currenciesList, onChange}) => {
     )
 }
 
-export default Currencies
+export default CurrenciesSelect
