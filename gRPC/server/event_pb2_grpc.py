@@ -24,6 +24,11 @@ class EventServiceStub(object):
                 request_serializer=event__pb2.OnConditionSubscription.SerializeToString,
                 response_deserializer=event__pb2.Event.FromString,
                 )
+        self.Ping = channel.unary_stream(
+                '/eventPackage.EventService/Ping',
+                request_serializer=event__pb2.Empty.SerializeToString,
+                response_deserializer=event__pb2.Empty.FromString,
+                )
 
 
 class EventServiceServicer(object):
@@ -41,6 +46,12 @@ class EventServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Ping(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EventServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +64,11 @@ def add_EventServiceServicer_to_server(servicer, server):
                     servicer.SubscribeOnCondition,
                     request_deserializer=event__pb2.OnConditionSubscription.FromString,
                     response_serializer=event__pb2.Event.SerializeToString,
+            ),
+            'Ping': grpc.unary_stream_rpc_method_handler(
+                    servicer.Ping,
+                    request_deserializer=event__pb2.Empty.FromString,
+                    response_serializer=event__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +111,22 @@ class EventService(object):
         return grpc.experimental.unary_stream(request, target, '/eventPackage.EventService/SubscribeOnCondition',
             event__pb2.OnConditionSubscription.SerializeToString,
             event__pb2.Event.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Ping(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/eventPackage.EventService/Ping',
+            event__pb2.Empty.SerializeToString,
+            event__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

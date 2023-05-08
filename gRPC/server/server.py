@@ -11,7 +11,7 @@ CITIES = ["Warsaw", "Viena", "Berlin", "Paris", "London"]
 EVENT = ["Concert", "Festival", "Theatre", "Cinema", "Exhibition"]
 
 SIZES = [e_pb2.SMALL, e_pb2.MEDIUM, e_pb2.LARGE]
-RATINGS = [e_pb2.Rating(value=1),e_pb2.Rating(value=1), e_pb2.Rating(value=5), e_pb2.Rating(value=10)]
+RATINGS = [e_pb2.Rating(value=1), e_pb2.Rating(value=1), e_pb2.Rating(value=5), e_pb2.Rating(value=10)]
 
 
 class Event:
@@ -53,6 +53,7 @@ def validate_interval(interval, context):
         return True
     return False
 
+
 def validate_rating(rating, context):
     if rating < 0 or rating > 10:
         context.set_details(
@@ -60,6 +61,7 @@ def validate_rating(rating, context):
         context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
         return True
     return False
+
 
 def validate_size(size, context):
     if size < 0 or size > 4:
@@ -73,6 +75,38 @@ def validate_size(size, context):
 class EventNotifier(e_pb2_grpc.EventService):
     def __init__(self):
         self.event = Event()
+
+    def Ping(self, request, context, counter=0):
+        print(f"Received ping request from {context.peer()}")
+        max_retries = 5
+        initial_backoff = 0.1
+        max_backoff = 10
+        backoff_multiplier = 2
+
+        # Perform the request with retry
+        retries = 0
+        while True:
+            try:
+                # Perform the request
+                response = e_pb2.Empty()
+                yield response
+                break
+            except grpc.RpcError as e:
+                # Check if the error is retryable
+                if e.code() not in [grpc.StatusCode.UNAVAILABLE, grpc.StatusCode.DEADLINE_EXCEEDED]:
+                    raise
+
+                # Check if the maximum number of retries has been reached
+                if retries >= max_retries:
+                    context.abort(e.code(), f"Error sending ping to {context.peer()}: {e.details()}")
+
+                # Calculate the backoff time
+                backoff_time = initial_backoff * (backoff_multiplier ** retries)
+                backoff_time = min(backoff_time, max_backoff)
+                print(
+                    f"Error sending ping to {context.peer()}. Retrying in {backoff_time}s ({retries + 1}/{max_retries})")
+                time.sleep(backoff_time)
+                retries += 1
 
     def SubscribePeriodic(self, request, context):
         print(f"Received periodic subscription request with interfal {request.interval} and peer {context.peer()}")

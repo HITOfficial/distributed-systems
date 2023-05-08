@@ -34,9 +34,18 @@ const handleCall = (call) => {
         console.log("Subscription ended")
     })
     call.on("error", (err) => {
-        console.error(`Error Code ${err.code} ${err.details} ` )
+        console.error(`Error Code ${err.code} ${err.details} `)
     })
 }
+
+const handlePing = (call) => {
+    call.on("data", (message) => {
+        console.log("Received ping from server");
+    });
+    call.on("error", (err) => {
+        console.error(`Error Code ${err.code} ${err.details}`);
+    });
+};
 
 const main = () => {
     const client = new eventPackage.EventService("localhost:50051", credentials.createInsecure());
@@ -51,6 +60,12 @@ const main = () => {
     console.log("Available commands: \n ")
     console.log(`periodic <interval> <cities> - subscribe to periodic events from cities with given interval`)
     console.log(`conditional <size / rating> <value> <cities> - subscribe to conditional events from cities with given interval`)
+
+    setInterval(() => {
+            const call = client.ping()
+            handlePing(call)
+        }
+        , 3000);
 
     rl.on("line", (line) => {
         let sub = {}
@@ -68,7 +83,6 @@ const main = () => {
                 break;
             case "conditional":
                 // condition, size / rating, cities
-                console.log(args)
                 if (!validateArgs(args, 3)) return;
                 const [condition, value, ...rest] = args;
                 switch (condition) {
@@ -82,8 +96,6 @@ const main = () => {
                         console.log("Invalid condition type ")
                         return;
                 }
-                console.log(sub)
-
                 calls.push(client.subscribeOnCondition(sub))
                 handleCall(calls.at(-1))
                 console.log(`Subscription nr ${calls.length - 1}`)
@@ -94,7 +106,7 @@ const main = () => {
                 if (!validateArgs(args, 1)) return;
                 if (calls.length <= idx) return console.log("dont have that much subscriptions");
                 calls.at(parseInt(idx)).cancel()
-                calls.splice(idx,1)
+                calls.splice(idx, 1)
                 console.log("Cancelled subscription: " + idx)
             default:
                 console.log("Invalid command")

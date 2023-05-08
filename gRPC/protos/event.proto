@@ -5,6 +5,7 @@ package eventPackage;
 service EventService {
   rpc SubscribePeriodic (PeriodicSubscription) returns (stream Event) {}
   rpc SubscribeOnCondition (OnConditionSubscription) returns (stream Event) {}
+  rpc Ping(Empty) returns (stream Empty) {}
 }
 
 message Empty {}
