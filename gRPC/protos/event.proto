@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package eventPackage;
+
+service EventService {
+  rpc SubscribePeriodic (PeriodicSubscription) returns (stream Event) {}
+  rpc SubscribeOnCondition (OnConditionSubscription) returns (stream Event) {}
+}
+
+message Empty {}
+
+message OnConditionSubscription {
+  repeated string cities = 1;
+  oneof condition {
+    Size size = 2;
+    Rating rating = 3;
+  }
+}
+
+message PeriodicSubscription {
+  uint32 interval = 1;
+  repeated string cities = 2;
+}
+
+message Event {
+  string name = 1;
+  string city = 2;
+  Size size = 3;
+  repeated Rating ratings = 4;
+}
+
+enum Size {
+  DEFAULT = 0;
+  SMALL = 1;
+  MEDIUM = 2;
+  LARGE = 3;
+}
+
+message Rating {
+  uint32 value = 1; // scale 1-10
+}
