@@ -7,6 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="rabbitmq" level="project" />
+    <orderEntry type="library" name="rabbitmq-exchange-ex1" level="project" />
+    <orderEntry type="library" name="rabbitmq-exchange-ex2" level="project" />
+    <orderEntry type="library" name="rabbitmq-exchange-ex" level="project" />
   </component>
 </module>
