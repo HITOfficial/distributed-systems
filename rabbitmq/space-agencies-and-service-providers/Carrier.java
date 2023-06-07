@@ -1,34 +1,50 @@
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.TimeoutException;
 
-public class Carrier {
+public class Carrier extends RabbitMQClient {
+    private ServiceType firstService;
+    private ServiceType secondService;
+
+    public Carrier() throws IOException, TimeoutException {
+        super();
+        firstService = null;
+        secondService = null;
+    }
+
+    @Override
+    protected void processMessage(String message, ServiceType serviceType, Delivery delivery) throws IOException {
+        System.out.println("Received: " + message + " for service: " + serviceType.getName());
+        try {
+            doWork();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("Finished: " + message + " for service: " + serviceType.getName());
+            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+        }
+    }
+
+    private void doWork() throws InterruptedException {
+        Thread.sleep((int) (Math.random() * 5 * 1000));
+    }
 
     public static void main(String[] args) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        final Connection connection = factory.newConnection();
-        final Channel channel = connection.createChannel();
-        // not to give more than one message to a worker at a time
-        channel.basicQos(1);
+        Carrier carrier = new Carrier();
+        carrier.declareQueues(ServiceType.PASSER_TRANSPORT, ServiceType.CARGO_TRANSPORT);
+        carrier.handleAdminMessages();
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        ServiceType firstService= null;
-        ServiceType secondService= null;
-
-        System.out.println("Enter service type to execute, you can choice only two different services");
+        System.out.println("Enter service type to execute, you can choose only two different services:");
         System.out.println("1- Passer Transport");
         System.out.println("2- Cargo Transport");
         System.out.println("3- Satellite Deployed");
 
-        while (firstService == null || secondService == null) {
+        while (carrier.firstService == null || carrier.secondService == null) {
             String serviceChoice = br.readLine();
 
             try {
@@ -49,10 +65,10 @@ public class Carrier {
                 }
 
                 if (selectedService != null) {
-                    if (firstService == null) {
-                        firstService = selectedService;
-                    } else if (secondService == null && !selectedService.equals(firstService)) {
-                        secondService = selectedService;
+                    if (carrier.firstService == null) {
+                        carrier.firstService = selectedService;
+                    } else if (carrier.secondService == null && !selectedService.equals(carrier.firstService)) {
+                        carrier.secondService = selectedService;
                     } else {
                         System.out.println("Service already selected, select another one");
                     }
@@ -63,43 +79,14 @@ public class Carrier {
         }
 
         for (ServiceType serviceType : ServiceType.values()) {
-            if(!serviceType.equals(ServiceType.SATELLITE_DEPLOYED)) {
-                channel.queueDeclare(serviceType.getName(), true, false, false, null);
+            if (!serviceType.equals(ServiceType.SATELLITE_DEPLOYED)) {
+                carrier.channel.basicConsume(serviceType.getName(), false, (consumerTag, delivery) -> {
+                    String message = new String(delivery.getBody(), "UTF-8");
+                    carrier.processMessage(message, serviceType, delivery);
+                }, consumerTag -> {});
             }
         }
-
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String message = new String(delivery.getBody(), "UTF-8");
-            String routingKey = delivery.getEnvelope().getRoutingKey();
-            ServiceType serviceType = null;
-
-            try {
-                serviceType = ServiceType.valueOf(routingKey.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                System.out.println("Invalid service type: " + routingKey);
-            }
-
-            if (serviceType != null) {
-                System.out.println("Received: " + message + " for service: " + serviceType.getName());
-                try {
-                    doWork();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    System.out.println("Finished: " + message + " for service: " + serviceType.getName());
-                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-                }
-            }
-        };
-        for (ServiceType serviceType : ServiceType.values()) {
-            if(!serviceType.equals(ServiceType.SATELLITE_DEPLOYED)) {
-                channel.basicConsume(serviceType.getName(), false, deliverCallback, consumerTag -> {
-                });
-            }
-        }
-    }
-
-    private static void  doWork() throws InterruptedException {
-        Thread.sleep((int) (Math.random() * 5 * 1000));
     }
 }
+
+
