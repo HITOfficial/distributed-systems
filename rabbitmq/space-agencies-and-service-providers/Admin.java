@@ -11,7 +11,11 @@ public class Admin {
         factory.setHost("localhost");
         final Connection connection = factory.newConnection();
         final Channel channel = connection.createChannel();
-        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
+        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+
+
+
+
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -28,13 +32,15 @@ public class Admin {
             if("q".equals(message)) break;
             switch (mode) {
                 case "1":
-                    sendMessage(channel, message, "agency.*");
+                    sendMessage(channel, message, "agency");
                     break;
                 case "2":
-                    sendMessage(channel, message, "carrier.*");
+                    sendMessage(channel, message, "carrier");
                     break;
                 case "3":
-                    sendMessage(channel, message, "#");
+                    // TODO TEMPORARY SOLUTION
+                    sendMessage(channel, message, "agency");
+                    sendMessage(channel, message, "carrier");
                     break;
                 default:
                     System.out.println("Invalid mode");

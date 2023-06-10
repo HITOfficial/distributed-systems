@@ -22,9 +22,9 @@ public abstract class RabbitMQClient {
         }
     }
 
-    public void handleAdminMessages() throws IOException {
+    public void handleAdminMessages(String topic) throws IOException {
         String adminQueueName = channel.queueDeclare().getQueue();
-        channel.queueBind(adminQueueName, "admin", "#");
+        channel.queueBind(adminQueueName, "admin", topic);
 
         DeliverCallback adminDeliveryCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");

@@ -35,11 +35,11 @@ public class Carrier extends RabbitMQClient {
     public static void main(String[] args) throws IOException, TimeoutException {
         Carrier carrier = new Carrier();
         carrier.declareQueues(ServiceType.PASSER_TRANSPORT, ServiceType.CARGO_TRANSPORT);
-        carrier.handleAdminMessages();
+        carrier.handleAdminMessages("carrier");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.println("Enter service type to execute, you can choose only two different services:");
+        System.out.println("Enter service type to handle, you can choose only two different services:");
         System.out.println("1- Passer Transport");
         System.out.println("2- Cargo Transport");
         System.out.println("3- Satellite Deployed");

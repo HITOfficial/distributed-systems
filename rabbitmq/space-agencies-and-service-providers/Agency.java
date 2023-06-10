@@ -22,7 +22,12 @@ public class Agency extends RabbitMQClient {
     public static void main(String[] args) throws IOException, TimeoutException {
         Agency agency = new Agency();
         agency.declareQueues(ServiceType.values());
-        agency.handleAdminMessages();
+        agency.handleAdminMessages("agency");
+
+        System.out.println("Enter service type to execute:");
+        System.out.println("1- Passer Transport");
+        System.out.println("2- Cargo Transport");
+        System.out.println("3- Satellite Deployed");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
