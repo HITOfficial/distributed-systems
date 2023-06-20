@@ -11,17 +11,30 @@ public class DataMonitor implements Watcher, AsyncCallback.StatCallback {
         this.zooKeeper = zooKeeper;
         this.znodePath = znodePath;
         this.zooKeeperApp = zooKeeperApp;
-        zooKeeper.exists(znodePath, this, this, null);
     }
 
     public void process(WatchedEvent event) {
         if (event.getType() == Event.EventType.NodeCreated && event.getPath().equals(znodePath)) {
+
             // Launch the external graphical application
+            System.out.println("Node created: " + znodePath);
             zooKeeperApp.runExternalApplication();
         } else if (event.getType() == Event.EventType.NodeDeleted && event.getPath().equals(znodePath)) {
             // Stop the external graphical application
+            System.out.println("Node deleted: " + znodePath);
             zooKeeperApp.stopExternalApplication();
-        } else if (event.getType() == Event.EventType.NodeChildrenChanged && event.getPath().equals(znodePath)) {
+        } else if (event.getType() == Event.EventType.NodeCreated && event.getPath().startsWith(znodePath)) {
+            zooKeeper.exists(znodePath, this, this, null); // Reset the watcher on the znode
+            System.out.println("Node child created: " + event.getPath());
+            try {
+                // Display the current number of children
+                int numChildren = zooKeeper.getChildren(znodePath, false).size();
+                zooKeeperApp.displayNumberOfChildren(numChildren);
+            } catch (KeeperException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (event.getType() == Event.EventType.NodeChildrenChanged && event.getPath().equals(znodePath)) {
             zooKeeper.exists(znodePath, this, this, null); // Reset the watcher on the znode
             try {
                 // Display the current number of children
